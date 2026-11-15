@@ -1,0 +1,56 @@
+(function(){
+var $=function(i){return document.getElementById(i)},main=$("main"),tab="lib",view=null,mode="all",S={done:{},ok:0,no:0};
+try{S=Object.assign(S,JSON.parse(localStorage.getItem("asn2")||"{}"))}catch(e){}
+function save(){try{localStorage.setItem("asn2",JSON.stringify(S))}catch(e){}}
+var B={},O=[],R=[];
+function add(c,ls){if(!B[c]){B[c]=[];O.push(c)}ls.forEach(function(l){if(B[c].indexOf(l)<0)B[c].push(l)})}
+window.ASN_DATA.forEach(function(g){add(g[0],g[1])});Object.keys(window.ASN_EXTRA||{}).forEach(function(c){add(c,window.ASN_EXTRA[c])});
+O.forEach(function(c){B[c].forEach(function(l){var p=l.split("|");R.push({id:R.length,c:c,k:p[0],n:p[1].split(">")})})});
+var SEC=[["الخلفاء والعشرة المبشَّرون",["أبو بكر الصديق","عمر بن الخطاب","عثمان بن عفان","علي بن أبي طالب","الزبير بن العوام","سعد بن أبي وقاص","عبد الرحمن بن عوف","طلحة بن عبيد الله"]],["المكثرون من الرواية",["أبو هريرة","ابن عمر","أنس بن مالك","ابن عباس","جابر بن عبد الله","أبو سعيد الخدري","ابن مسعود","عبد الله بن عمرو"]],["أمهات المؤمنين والصحابيات",["عائشة","أم سلمة","حفصة","أم حبيبة","ميمونة","أسماء بنت أبي بكر","أم عطية","فاطمة بنت قيس","الربيع بنت معوذ","أسماء بنت يزيد بن السكن"]]];
+var used={};SEC.forEach(function(s){s[1]=s[1].filter(function(c){return B[c]});s[1].forEach(function(c){used[c]=1})});
+SEC.push(["بقية الصحابة",O.filter(function(c){return!used[c]})]);
+var K={"ع":"الجماعة: الستة جميعًا","خ":"صحيح البخاري","خت":"البخاري معلّقًا","م":"صحيح مسلم","د":"سنن أبي داود","ت":"سنن الترمذي","س":"سنن النسائي","ق":"سنن ابن ماجه","٤":"الأربعة عدا البخاري ومسلم"};
+$("k").innerHTML='<option value="">كل الكتب</option>'+["خ","م","ع","٤","د","ت","س","ق"].map(function(c){return"<option>"+c+"</option>"}).join("");
+function flt(pool){var q=$("q").value.trim(),k=$("k").value,u=$("u").checked;
+ return pool.filter(function(r){return(!k||r.k.split(" ").indexOf(k)>=0)&&(!q||r.n.join(" ").indexOf(q)>=0)&&(!u||!S.done[r.id])})}
+function dn(c){return R.filter(function(r){return r.c==c&&S.done[r.id]}).length}
+function prog(){var d=Object.keys(S.done).filter(function(i){return S.done[i]}).length;$("bar").style.width=(100*d/R.length)+"%";$("ptxt").textContent="أتقنتُ "+d+" من "+R.length+" إسنادًا"}
+function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return h}
+function row(r,num,hide,mx){mx=mx||r.n.length;
+ var h='<tr class="r'+(S.done[r.id]?' done':'')+'" data-id="'+r.id+'"><td class="no" title="تم إتقانه">'+(S.done[r.id]?"✓":num)+'</td>';
+ h+='<td class="sy'+(mode=="s"?" h":"")+'">'+r.k+'</td>';
+ var rnd=mode=="r"?(r.id*7+(S.seed||0))%r.n.length:-1;
+ r.n.forEach(function(x,i){h+='<td class="nm p'+(i%5)+((mode=="n"||i===rnd||hide===i)?" h":"")+'"'+(i==0&&mx>r.n.length?' colspan="'+(mx-r.n.length+1)+'"':'')+'>'+x+'</td>'});
+ return h+'<td class="cm'+(mode=="c"?" h":"")+'">'+r.c+'</td></tr>'}
+function tbl(L,fn){var mx=0;L.forEach(function(r){mx=Math.max(mx,r.n.length)});var b="";L.forEach(function(r,i){b+=fn(r,i,mx)});return '<table class="t">'+b+'</table>'}
+function lib(){var q=$("q").value.trim(),o="",W=Math.max(main.clientWidth-24,200);
+ SEC.forEach(function(s){var L=s[1].filter(function(c){return!q||c.indexOf(q)>=0});if(!L.length)return;
+  var per=Math.max(3,Math.floor(W/50)),rows="";
+  for(var i=0;i<L.length;i+=per){var bs="";
+   L.slice(i,i+per).forEach(function(c){var n=B[c].length,d=dn(c),h0=hue(c),v=h0%7,hu=342+h0%14,sa=48+(h0%5)*6,li=20+v*3,w=36+h0%9,h=Math.min(120+c.length*6,250)+(h0%4)*6;
+    bs+='<div class="sp" data-c="'+c+'" title="مسند '+c+' — '+d+'/'+n+'" style="width:'+w+'px;height:'+h+'px;background:linear-gradient(90deg,hsl('+hu+','+sa+'%,'+(li-4)+'%),hsl('+hu+','+sa+'%,'+(li+8)+'%) 45%,hsl('+hu+','+sa+'%,'+(li-6)+'%))"><em></em><span>'+c+'</span><u>'+n+'</u><i><s style="height:'+(100*d/n)+'%"></s></i></div>'});
+   rows+='<div class="shelf"><div class="bks">'+bs+'</div><div class="board"></div></div>'}
+  o+='<div class="sec">'+s[0]+'</div>'+rows});
+ main.innerHTML=(o||'<p class="mu">لا نتائج</p>')+'<p class="mu">اضغط على كتاب لفتح مسنده · الشريط الذهبي أسفل الكتاب يُظهر تقدّمك</p>'}
+function book(){var L=flt(R.filter(function(r){return r.c==view})),b=L.length?tbl(L,function(r,i,mx){return row(r,i+1,-1,mx)}):"";
+ main.innerHTML='<button class="back">→ المكتبة</button><div class="grp"><div class="gh"><span>مسند '+view+'</span><span>'+dn(view)+' / '+B[view].length+'</span></div><div class="sc">'+(b||'<p class="mu" style="padding:8px">لا نتائج</p>')+'</div></div><p class="mu">اضغط الخلية المحجوبة لكشفها · اضغط الرقم لتعليم الإسناد «متقَن» · مرّر الصف أفقيًا</p>'}
+function quiz(){var L=flt(view?R.filter(function(r){return r.c==view}):R);if(!L.length){main.innerHTML='<div class="box">لا إسناد مطابق.</div>';return}
+ var c=L[Math.floor(Math.random()*L.length)],h=Math.floor(Math.random()*c.n.length),m=mode;mode="all";
+ main.innerHTML='<div class="box"><p class="mu">'+(view?'مسند '+view:'من كل المكتبة')+' — ما الراوي المحجوب؟</p><div class="grp"><div class="sc">'+tbl([c],function(r){return row(r,"؟",h)})+'</div></div><button class="btn" id="y">عرفتُه ✓</button><button class="btn g" id="x">لم أعرفه</button><p class="mu">النتيجة: '+S.ok+' صحيحة · '+S.no+' خاطئة</p></div>';mode=m;
+ $("y").onclick=function(){S.ok++;save();quiz()};$("x").onclick=function(){S.no++;save();quiz()}}
+function key(){main.innerHTML='<div class="box">'+Object.keys(K).map(function(k){return'<p><b style="color:var(--ac)">'+k+'</b> '+K[k]+'</p>'}).join("")+'<p class="mu">يُقرأ الإسناد من اليمين: شيخ المصنِّف ثم نزولًا إلى الصحابي في أقصى اليسار.</p></div>'}
+function render(){prog();if(tab=="lib")(view?book:lib)();else({quiz:quiz,key:key})[tab]();
+ $("ctl").style.display=tab=="key"?"none":"";$("modes").style.display=(tab=="lib"&&!view)||tab=="quiz"?"none":"";$("k").style.display=(tab=="lib"&&!view)?"none":""}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;if(tab=="lib")view=null;document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
+document.querySelectorAll("#modes button").forEach(function(b){b.onclick=function(){mode=b.dataset.m;S.seed=Math.floor(Math.random()*99);document.querySelectorAll("#modes button").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
+["q","k","u"].forEach(function(i){$(i).addEventListener("input",render)});
+main.addEventListener("click",function(e){var t=e.target,bk=t.closest(".sp");
+ if(bk){view=bk.dataset.c;$("q").value="";window.scrollTo(0,0);render();return}
+ if(t.classList.contains("back")){view=null;render();return}
+ var r=t.closest(".r");if(!r)return;
+ if(t.classList.contains("no")){var id=r.dataset.id;S.done[id]=!S.done[id];save();prog();if(tab=="lib")book();return}
+ if(t.classList.contains("h")){t.classList.remove("h");t.classList.add("rev")}});
+var rz;window.addEventListener("resize",function(){clearTimeout(rz);rz=setTimeout(function(){if(tab=="lib"&&!view)lib()},150)});
+render();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
+})();
