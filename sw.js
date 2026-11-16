@@ -1,3 +1,6 @@
-var C="asn-v3",F=["data-extra.js","./","index.html","style.css","app.js","data.js","manifest.json","icons/icon.svg"];
-self.addEventListener("install",function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(F)}))});
-self.addEventListener("fetch",function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request)}))});
+// شبكة أولًا (تحديث تلقائي)، ثم الذاكرة عند انقطاع الإنترنت
+var C="asn-auto";
+self.addEventListener("install",function(){self.skipWaiting()});
+self.addEventListener("activate",function(e){e.waitUntil(self.clients.claim())});
+self.addEventListener("fetch",function(e){if(e.request.method!="GET")return;
+ e.respondWith(fetch(e.request).then(function(r){var c=r.clone();caches.open(C).then(function(k){k.put(e.request,c)});return r}).catch(function(){return caches.match(e.request)}))});
