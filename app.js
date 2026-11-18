@@ -26,15 +26,18 @@ function row(r,num,hide,mx){mx=mx||r.n.length;
  r.n.forEach(function(x,i){h+='<td class="nm p'+(i%5)+((mode=="n"||i===rnd||hide===i)?" h":"")+'"'+(i==0&&mx>r.n.length?' colspan="'+(mx-r.n.length+1)+'"':'')+'>'+x+'</td>'});
  return h+'<td class="cm'+(mode=="c"?" h":"")+'">'+r.c+'</td></tr>'}
 function tbl(L,fn){var mx=0;L.forEach(function(r){mx=Math.max(mx,r.n.length)});var b="";L.forEach(function(r,i){b+=fn(r,i,mx)});return '<table class="t">'+b+'</table>'}
-function lib(){var q=$("q").value.trim(),o="",W=Math.max(main.clientWidth-24,200);
+var PAL=[["#7a2233","#f6e7c1"],["#24543f","#f1e6c0"],["#243a63","#f4e3b2"],["#b98a2e","#2f2112"],["#2c6a6e","#f3ead0"],["#6b4528","#f2dfb4"],["#5b3552","#f1e2c3"],["#46525e","#f0e8d2"],["#a3502f","#fbeacb"],["#62662f","#f3ecca"]];
+var PAL=[["#7b2d3a","#9d4656"],["#2f5d4a","#45806a"],["#2c4a6e","#436b99"],["#b8862b","#dcaa49"],["#2a6f6f","#3f9494"],["#5e3a63","#80558a"],["#b5573a","#d57a57"],["#6b7035","#8d934b"],["#4a5568","#69768b"],["#6a4429","#8e613c"]];
+var PAL=["#7b1e2f","#1f4e5f","#2f5d3a","#8a5a1e","#3b3f6b","#6b2f4f","#a0522d","#2d5f5b","#5a3a22","#4a6a2f","#8c3b2b","#2b4a6b","#6b5a1e","#4f2d5f"];
+function lib(){var q=$("q").value.trim(),o="",W=Math.max(main.clientWidth-64,200);
  SEC.forEach(function(s){var L=s[1].filter(function(c){return!q||c.indexOf(q)>=0});if(!L.length)return;
-  var per=Math.max(3,Math.floor(W/58)),rows="";
+  var per=Math.max(3,Math.floor(W/60)),rows="";
   for(var i=0;i<L.length;i+=per){var bs="";
-   L.slice(i,i+per).forEach(function(c){var n=B[c].length,d=dn(c),h0=hue(c),v=h0%7,hu=342+h0%14,sa=48+(h0%5)*6,li=34+v*2.5,w=46+h0%8,h=Math.min(130+c.length*9,300)+(h0%4)*6;
-    bs+='<div class="sp" data-c="'+c+'" title="مسند '+c+' — '+d+'/'+n+'" style="width:'+w+'px;height:'+h+'px;background:linear-gradient(90deg,hsl('+hu+','+sa+'%,'+(li-4)+'%),hsl('+hu+','+sa+'%,'+(li+8)+'%) 45%,hsl('+hu+','+sa+'%,'+(li-6)+'%))"><em></em><span>'+c+'</span><u>'+n+'</u><i><s style="height:'+(100*d/n)+'%"></s></i></div>'});
+   L.slice(i,i+per).forEach(function(c){var n=B[c].length,d=dn(c),h0=hue(c),w=44+(h0%5)*3,h=Math.min(140+c.length*8,285)+(h0%5)*7;
+    bs+='<div class="sp" data-c="'+c+'" title="مسند '+c+' — '+d+'/'+n+'" style="width:'+w+'px;height:'+h+'px;background-color:'+PAL[h0%PAL.length]+'"><em></em><span>'+c+'</span><u>'+n+'</u><i><s style="height:'+(100*d/n)+'%"></s></i></div>'});
    rows+='<div class="shelf"><div class="bks">'+bs+'</div><div class="board"></div></div>'}
-  o+='<div class="sec">'+s[0]+'</div>'+rows});
- main.innerHTML=(S.last&&B[S.last]?'<button class="back go" data-c="'+S.last+'">▶ متابعة: مسند '+S.last+'</button>':'')+(o||'<p class="mu">لا نتائج</p>')+'<p class="mu">اضغط على كتاب لفتح مسنده · الشريط الذهبي أسفل الكتاب يُظهر تقدّمك</p>'}
+  o+='<div class="case"><div class="plaque">'+s[0]+'</div>'+rows+'</div>'});
+ main.innerHTML=(S.last&&B[S.last]?'<button class="back go" data-c="'+S.last+'">▶ متابعة: مسند '+S.last+'</button>':'')+(o||'<p class="mu">لا نتائج</p>')+'<p class="mu">اضغط على كتاب لفتح مسنده · الشريط الذهبي على حافة الكتاب يُظهر تقدّمك</p>'}
 function book(){var L=flt(R.filter(function(r){return r.c==view})),b=L.length?tbl(L,function(r,i,mx){return row(r,i+1,-1,mx)}):"";
  main.innerHTML='<button class="back">→ المكتبة</button><div class="grp"><div class="gh"><span>مسند '+view+'</span><span>'+dn(view)+' / '+B[view].length+'</span></div><div class="sc">'+(b||'<p class="mu" style="padding:8px">لا نتائج</p>')+'</div></div><p class="mu">اضغط الخلية المحجوبة لكشفها · اضغط الرقم لتعليم الإسناد «متقَن» · مرّر الصف أفقيًا</p>'}
 function quiz(){var L=flt(view?R.filter(function(r){return r.c==view}):R);if(!L.length){main.innerHTML='<div class="box">لا إسناد مطابق.</div>';return}
@@ -47,7 +50,7 @@ function render(){prog();if(tab=="lib")(view?book:lib)();else({quiz:quiz,key:key
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;if(tab=="lib")view=null;document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
 document.querySelectorAll("#modes button").forEach(function(b){b.onclick=function(){mode=b.dataset.m;S.seed=Math.floor(Math.random()*99);document.querySelectorAll("#modes button").forEach(function(x){x.classList.toggle("on",x==b)});render()}});
 ["q","k","u"].forEach(function(i){$(i).addEventListener("input",render)});
-main.addEventListener("click",function(e){var t=e.target,bk=t.closest(".sp");
+main.addEventListener("click",function(e){var t=e.target,bk=t.closest(".sp,.vol");
  if(t.classList.contains("go")){view=t.dataset.c;window.scrollTo(0,0);render();return}
  if(bk){view=bk.dataset.c;S.last=view;save();$("q").value="";window.scrollTo(0,0);render();return}
  if(t.classList.contains("back")){view=null;render();return}
